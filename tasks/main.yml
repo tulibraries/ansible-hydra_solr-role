@@ -1,0 +1,60 @@
+---
+
+- name: create the required cores
+  file:
+    path: "{{ solr_home }}/{{ item }}/conf"
+    state: directory
+  with_items: "{{ solr_cores }}"
+  become_user: "{{solr_user }}"
+  notify: restart solr
+  tags:
+    - solr
+
+- name: Use the hydra solr.xml
+  template:
+    src: solr.xml.j2
+    dest: "{{ solr_home }}/solr.xml"
+    backup: yes
+  with_items: "{{ solr_cores }}"
+  become_user: "{{ solr_user }}"
+  notify: restart solr
+  tags:
+    - solr
+
+- name: add the core configuration to each newly created core
+  copy:
+    src: solr_conf/
+    dest: "{{ solr_home }}/{{ item }}/conf"
+  with_items: "{{ solr_cores }}"
+  become_user: "{{solr_user }}"
+  notify: restart solr
+  tags:
+    - solr
+
+- name: Download the hydra jetty version
+  local_action:
+    module: get_url
+    url: https://github.com/projecthydra/hydra-jetty/archive/v{{ hydra_jetty_version }}.tar.gz
+    dest: downloads/
+  become: no
+  tags:
+    - solr
+
+- name: Extract the hydra jetty solr user home dir
+  local_action:
+    module: command tar xzvf hydra-jetty-{{ hydra_jetty_version }}.tar.gz hydra-jetty-{{ hydra_jetty_version }}/solr
+    args:
+      chdir: downloads
+      creates: hydra-jetty-{{ hydra_jetty_version }}/solr
+  become: no
+  tags:
+    - solr
+
+- name: Copy the hydra jetty extra libraries to solr home
+  copy:
+    src: downloads/hydra-jetty-{{ hydra_jetty_version }}/solr/lib
+    dest: "{{ solr_home}}/"
+  become_user: "{{ solr_user }}"
+  notify: restart solr
+  tags:
+    - solr

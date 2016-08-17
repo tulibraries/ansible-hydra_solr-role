@@ -1,0 +1,8 @@
+---
+# handlers file for configure-solr-for-hydra-role
+
+
+- name: restart solr
+  service:
+    name: solr
+    state: restarted

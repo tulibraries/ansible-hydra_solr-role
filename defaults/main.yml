@@ -1,0 +1,6 @@
+---
+
+solr_home: /var/solr
+solr_user: solr
+solr_cores:
+  - prod
