@@ -3,6 +3,12 @@
 
 
 - name: restart solr
-  service:
-    name: solr
-    state: restarted
+  shell: systemctl stop solr && sleep 10
+  become: yes
+  notify: start solr
+
+- name: start solr
+  shell: systemctl start solr
+  become: yes
+
+  
